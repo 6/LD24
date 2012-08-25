@@ -29,11 +29,15 @@ class Game
     @sceneIntro()
 
   sceneIntro: =>
-    @stage.fadeIn tmpl("logo"), false, 1500, =>
+    @stage.fadeIn tmpl("logo"), false, 1000, =>
       @stage.click true, =>
-        p "TODO next thing here"
+        @stage.fadeIn tmpl("instructions"), false, 100, =>
+          @stage.click true, @sceneGame
+
+  sceneGame: =>
+    p "TODO game"
 
 $ ->
   stage = new Stage()
-  preloadImages ["logo.png", "click-uncache.png", "arrow.png"], ->
+  preloadImages ["logo.png", "click-uncache.png", "arrow.png", "instructions.png"], ->
     new Game(stage)
