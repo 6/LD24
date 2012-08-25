@@ -14,3 +14,7 @@ window.preloadImages = (images_urls, done_fn, prefix="images/") ->
   image.src = "#{prefix}#{images_urls[0]}"
   # if in cache, onload may not fire
   onloadHandler()  if image.complete
+
+# inclusive
+window.randomRange = (from, to) =>
+  Math.floor(Math.random() * (to+1)) + from
