@@ -1,0 +1,17 @@
+@black: #222;
+
+// Clearfix via https://github.com/markdotto/Preboot.less/blob/master/bootstrap.less
+.clearfix {
+  zoom: 1;
+  &:after {
+    display: block;
+    visibility: hidden;
+    height: 0;
+    clear: both;
+    content: ".";
+  }
+}
+
+body {
+  background: @black;
+}
