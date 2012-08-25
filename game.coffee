@@ -26,15 +26,17 @@ class Stage
 
   clear: => @$stage.html("")
 
-  # type: 0 = up, 1 = right, 2 = down, 3 = left
-  addArrow: (type) =>
-    color = ["red", "orange", "yellow", "pink"]
-    arrowId = type #TODO make a unique id here
-    @$stage.append tmpl("arrow", arrowId: arrowId)
+  addArrow: (rotation) =>
+    color =["red", "orange", "yellow", "pink"]
+    @$stage.append tmpl("arrow", arrowId: @arrowId)
 
-    @R = Raphael("arrow-#{arrowId}", 75, 75)
-    rect = @R.rect(0, 0, 75, 75).attr(fill: color[type])
-    img = @R.image("images/arrow.png", 0, 0, 75, 75).attr(transform: "r#{90*type}")
+    arrowSelector = "arrow-#{@arrowId}"
+    @arrowId += 1
+    R = Raphael(arrowSelector, 75, 75)
+    rect = R.rect(0, 0, 75, 75).attr(fill: color[rotation])
+    img = R.image("images/arrow.png", 0, 0, 75, 75).attr(transform: "r#{90*rotation}")
+
+    {arrowSelector: arrowSelector, rimg: img, rrect: rect, rotation: rotation}
 
 class Game
   constructor: (@stage) ->
