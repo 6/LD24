@@ -10,6 +10,7 @@ window.preloadImages = (images_urls, done_fn, prefix="images/") ->
   image = new Image()
   onloadHandler = -> preloadImages(images_urls[1..], done_fn)
   image.onload = onloadHandler
+  image.onerror = -> alert("Error loading #{images_urls[0]}. Try refreshing")
   image.src = "#{prefix}#{images_urls[0]}"
   # if in cache, onload may not fire
   onloadHandler()  if image.complete
