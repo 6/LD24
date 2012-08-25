@@ -1,6 +1,13 @@
+ROTATION =
+  UP: 0
+  RIGHT: 1
+  DOWN: 2
+  LEFT: 3
+
 class Stage
   constructor: ->
     @$stage = $("#stage")
+    @arrowId = 0
 
   fadeOut: (done_fn, ms=150) =>
     @$stage.children().fadeOut(ms)
@@ -50,10 +57,10 @@ class Game
 
   sceneGame: =>
     @stage.clear()
-    @stage.addArrow(0)
-    @stage.addArrow(1)
-    @stage.addArrow(2)
-    @stage.addArrow(3)
+    @stage.addArrow(ROTATION.UP)
+    @stage.addArrow(ROTATION.RIGHT)
+    @stage.addArrow(ROTATION.DOWN)
+    @stage.addArrow(ROTATION.LEFT)
 
 $ ->
   stage = new Stage()
