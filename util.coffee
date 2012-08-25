@@ -5,7 +5,7 @@ window.tmpl = (selector, data = {}) ->
   $(_.template($("#tmpl-#{selector}").html())(data))
 
 #TODO parallel loading
-window.preloadImages = (images_urls, done_fn, prefix="/images/") ->
+window.preloadImages = (images_urls, done_fn, prefix="images/") ->
   return done_fn()  if images_urls.length == 0
   image = new Image()
   onloadHandler = -> preloadImages(images_urls[1..], done_fn)
