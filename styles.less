@@ -30,6 +30,11 @@ body {
   background: #111;
   border: 1px solid #444;
   color: #aaa;
+  // disable selecting (TODO doesn't work in IE?)
+  // see http://stackoverflow.com/questions/765224/remove-selection-using-javascript
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 #logo-wrap {
@@ -45,5 +50,7 @@ body {
 }
 
 #click-wrap {
-  text-align:center;
+  .center;
+  top:85%;
+  margin-left: -352/2px;
 }
