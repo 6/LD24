@@ -57,10 +57,53 @@ class Game
 
   sceneGame: =>
     @stage.clear()
-    @stage.addArrow(ROTATION.UP)
-    @stage.addArrow(ROTATION.RIGHT)
-    @stage.addArrow(ROTATION.DOWN)
-    @stage.addArrow(ROTATION.LEFT)
+    # TODO arrow key event listeners
+    @nextLevel()
+
+  sceneEnding: =>
+    @stage.fadeOut =>
+      @stage.clear()
+      p "TODO ending"
+
+  nextLevel: =>
+    @level ?= 0
+    @level += 1
+    @progress = 0.0
+    @stopTickTock = false
+    @arrows_queue = []
+    @tickTock()
+
+  evolution: (done_fn) =>
+    #TODO based on @level
+    #TODO "GET READY" message
+    @updateProgressBar()
+    done_fn()
+
+  updateProgressBar: =>
+    #TODO based on @progress
+
+  tickTock: =>
+    return  if @stopTickTock
+    arrow = @stage.addArrow(randomRange(0, 3))
+    #arrow.animate, done = fail
+    @arrows_queue.push(arrow)
+    #setTimeout(@tickTock, randomRange(50, 200))
+
+  #TODO finish this method
+  onArrowPress: (e) =>
+    return  if @stopTickTock
+    actualArrow = @arrow_queue.shift()
+    #TODO show right/wrong color for actualArrow
+    # progress += some amount based on right/wrong
+    @progress = Math.max(0, @progress)
+
+    if @progress >= 1.0
+      @progress = 1.0
+      @stopTickTock = true
+      # TODO remove all arrows
+      level += 1
+      if level > 3 then @sceneEnding() else @evolution(@nextLevel)
+    @updateProgressBar()
 
 $ ->
   stage = new Stage()
