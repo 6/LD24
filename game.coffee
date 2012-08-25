@@ -35,5 +35,5 @@ class Game
 
 $ ->
   stage = new Stage()
-  preloadImages ["logo.png", "click.png", "arrow.png"], ->
+  preloadImages ["logo.png", "click-uncache.png", "arrow.png"], ->
     new Game(stage)
