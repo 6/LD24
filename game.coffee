@@ -1,6 +1,6 @@
-class window.Game
+class Game
   constructor: ->
     console.p "OK it works"
 
 $ ->
-  game = new window.Game();
+  game = new Game();
