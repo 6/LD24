@@ -2,10 +2,10 @@ class Stage
   constructor: ->
     @$stage = $("#stage")
 
-  fadeIn: ($html, ms=500) =>
+  fadeIn: ($html, ms=1500) =>
     $html.hide()
     @$stage.html($html)
-    $html.fadeIn(1000)
+    $html.fadeIn(ms)
 
 class Game
   constructor: (@stage) ->
