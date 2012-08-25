@@ -13,4 +13,5 @@ class Game
 
 $ ->
   stage = new Stage()
-  game = new Game(stage)
+  preloadImages ["logo.png", "arrow.png"], ->
+    game = new Game(stage)

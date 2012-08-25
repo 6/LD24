@@ -4,11 +4,11 @@ window.p = (args...) ->
 window.tmpl = (selector, data = {}) ->
   $(_.template($("#tmpl-#{selector}").html())(data))
 
-#TODO
-'''window.preloadImages = (images_urls, done_fn) ->
-  done_fn()  if images_urls.length == 0
+window.preloadImages = (images_urls, done_fn, prefix="/images/") ->
+  return done_fn()  if images_urls.length == 0
   image = new Image()
-  image.onLoad = ->
-    preloadImages(images_urls[1..], done_fn)
-  image.src = images_urls[0]
-    '''
+  onloadHandler = -> preloadImages(images_urls[1..], done_fn)
+  image.onload = onloadHandler
+  image.src = "#{prefix}#{images_urls[0]}"
+  # if in cache, onload may not fire
+  onloadHandler()  if image.complete
