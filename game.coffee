@@ -3,7 +3,9 @@ class Stage
     @$stage = $("#stage")
 
   fadeOut: (done_fn, ms=150) =>
-    @$stage.children().fadeOut(ms, done_fn)
+    @$stage.children().fadeOut(ms)
+    # prevent done cb from being called multiple times if many children
+    setTimeout(done_fn, ms)
 
   fadeIn: ($html, append=false, ms=500, done_fn) =>
     $html.hide()
@@ -15,7 +17,8 @@ class Stage
 
   click: (fadeOutEverything, done_fn) =>
     @fadeIn tmpl("click"), true, 250
-    @$stage.click =>
+    @$stage.bind "click.clicktocontinue", =>
+      @$stage.unbind("click.clicktocontinue")
       if fadeOutEverything
         @fadeOut(done_fn)
       else
