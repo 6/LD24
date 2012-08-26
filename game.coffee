@@ -13,6 +13,7 @@ class Stage
   constructor: ->
     @$stage = $("#stage")
     @arrowId = 0
+    @removedArrows = {}
 
   fadeOut: (done_fn, ms=150) =>
     @$stage.children().fadeOut(ms)
@@ -39,7 +40,7 @@ class Stage
   clear: => @$stage.html("")
 
   addArrow: (rotation) =>
-    color =["blue", "orange", "yellow", "pink"]
+    color =["grey", "orange", "yellow", "pink"]
     @$stage.append tmpl("arrow", arrowId: @arrowId, top: (rotation * 80) + 20)
 
     arrowSelector = "arrow-#{@arrowId}"
@@ -50,11 +51,16 @@ class Stage
 
     {$arrow: $("##{arrowSelector}"), rimg: img, rrect: rect, rotation: rotation}
 
-  removeArrow: (arrow, result) =>
+  removeArrow: (arrow, result, fast=true) =>
+    id = arrow["$arrow"].attr("id")
+    return if @removedArrows[id]?
+    @removedArrows[id] = true
     flashColor = ["red", "blue", arrow["rrect"].attr("fill")][result]
     originalColor = arrow['rrect'].attr('fill')
-    arrow["rrect"].animate {fill:flashColor}, 150, =>
-      arrow["rrect"].animate {fill: originalColor, opacity: 0}, 500, =>
+    flashSpeed = if fast then 100 else 150
+    arrow["rrect"].animate {fill:flashColor}, flashSpeed, =>
+      fadeSpeed = if fast then 150 else 500
+      arrow["rrect"].animate {opacity: 0}, fadeSpeed, =>
         arrow["$arrow"].remove()
 
 class Game
@@ -69,7 +75,9 @@ class Game
 
   sceneGame: =>
     @stage.clear()
-    # TODO arrow key event listeners
+    $(document).keydown (e) =>
+      pressed = {37: ROTATION.LEFT, 38: ROTATION.UP, 39: ROTATION.RIGHT, 40: ROTATION.DOWN}[e.keyCode]
+      @onArrowPress(pressed)  if pressed?
     @nextLevel()
 
   sceneEnding: =>
@@ -98,19 +106,30 @@ class Game
   tickTock: =>
     return  if @stopTickTock
     arrow = @stage.addArrow(randomRange(0, 3))
-    arrow["rrect"].animate {opacity: 1}, 400
-    arrow["$arrow"].animate {right: '+=550'}, 1000, 'linear', =>
+    arrow["rrect"].animate {opacity: 1}, 250
+    arrow["$arrow"].animate {right: '+=600'}, 1200, 'linear', =>
+      @arrows_queue = _.reject @arrows_queue, (arr) =>
+        arrow["$arrow"].attr("id") == arr["$arrow"].attr("id")
       arrow["$arrow"].animate {right: '+=100'}, 600, 'linear'
-      @stage.removeArrow(arrow, ARROW_RESULT.FAIL)
+      @stage.removeArrow(arrow, ARROW_RESULT.FAIL, fast=false)
     @arrows_queue.push(arrow)
-    setTimeout(@tickTock, randomRange(200, 500))
+    setTimeout(@tickTock, randomRange(600, 800))
 
-  #TODO finish this method
-  onArrowPress: (e) =>
+  onArrowPress: (pressed) =>
     return  if @stopTickTock
-    actualArrow = @arrow_queue.shift()
-    #TODO show right/wrong color for actualArrow
-    #TODO @setProgress(@progress + some amount based on right/wrong)
+    actualArrow = @arrows_queue.shift()
+    return  unless actualArrow?
+    progressChange = 0
+    if actualArrow["rotation"] == pressed
+      # correct arrow pressed
+      @stage.removeArrow(actualArrow, ARROW_RESULT.SUCCESS)
+      #progressChange =
+    else
+      # wrong arrow pressed
+      @stage.removeArrow(actualArrow, ARROW_RESULT.FAIL)
+      #progressChange =
+
+    @setProgress(@progress + progressChange)
 
     if @progress >= 1.0
       @stopTickTock = true
