@@ -39,6 +39,20 @@ class Stage
       else
         done_fn()
 
+  exclamation: (subtitle, text, ms, done_fn) =>
+    selector = if subtitle? then "exclamation-with-subtitle" else "exclamation"
+    @fadeIn if subtitle?
+      tmpl(selector, {text: text, subtitle: subtitle})
+    else
+      tmpl(selector, {text: text})
+    , true, ms/2, =>
+      setTimeout =>
+        $excl = $("##{selector}")
+        $excl.fadeOut ms/2, =>
+          $excl.remove()
+          done_fn()
+      , ms
+
   append: (html) =>
     @$stage.append(html)
 
@@ -71,6 +85,10 @@ class Stage
       arrow["rrect"].animate {opacity: 0}, fadeSpeed, =>
         arrow["$arrow"].remove()
 
+  removeAllArrows: (done_fn) =>
+    @$stage.find(".arrow").fadeOut(250)
+    setTimeout(done_fn, 250)
+
 class Game
   constructor: (@stage) ->
     @sceneGame() #TODO replace w sceneIntro
@@ -93,27 +111,29 @@ class Game
   sceneEnding: =>
     @stage.fadeOut =>
       @stage.clear()
-      p "TODO ending"
+      #TODO actual ending
+      @stage.exclamation null, "END", 1400, =>
+        p "DONE"
 
   nextLevel: =>
-    @level ?= 0
-    @level += 1
+    @level ?= 1
     @stopTickTock = false
     @arrows_queue = []
-    @tickTock()
+    stage_s = if @level <= 2 then "Stage #{@level}" else "Final stage"
+    @stage.exclamation stage_s, "Get ready", 1400, @tickTock
 
   evolution: (done_fn) =>
-    #TODO based on @level
-    #TODO "GET READY" message
-    @setProgress(0)
-    done_fn() #TODO after GET READY
+    @stage.exclamation "Evolution stage #{@level - 1}", "Complete", 1400, =>
+      #TODO change char based on @level
+      @setProgress(0)
+      done_fn()
 
   setProgress: (amount) =>
     @progress = amount
     @progress = Math.min(1.0, Math.max(0, @progress)) # between 0 and 1 (inclusive)
     @progress = 0  if @progress < 0.001
     $bar = $("#stage").find("#progress-bar")
-    $bar.find("#progress-bar-inner").css("width", "#{@progress * $bar.width()}px")
+    $bar.find("#progress-bar-inner").animate({"width": "#{@progress * $bar.width()}px"}, 150)
 
   tickTock: =>
     return  if @stopTickTock
@@ -141,9 +161,9 @@ class Game
     if @progress >= 0.99
       @setProgress(1)
       @stopTickTock = true
-      # TODO remove all arrows
       @level += 1
-      if @level > 3 then @sceneEnding() else @evolution(@nextLevel)
+      @stage.removeAllArrows =>
+        if @level > 3 then @sceneEnding() else @evolution(@nextLevel)
 
 $ ->
   stage = new Stage()

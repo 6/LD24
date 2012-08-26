@@ -1,5 +1,6 @@
 <!doctype html><meta charset='utf-8'>
 <title>E V O L U T I O N</title>
+<link href='http://fonts.googleapis.com/css?family=Racing+Sans+One' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" href="vendor/reset.css">
 <!-- TODO switch to minified before shipping -->
 <script src="vendor/jquery-1.8.0.js"></script>
@@ -35,3 +36,15 @@
 <script id="tmpl-progress-bar" type="text/html">
   <div id="progress-bar"><div id="progress-bar-inner"></div></div>
 </script>
+
+<script id="tmpl-exclamation" type="text/html">
+  <div id="exclamation" class="exclamation"><%= text %></div>
+</script>
+
+<script id="tmpl-exclamation-with-subtitle" type="text/html">
+  <div id="exclamation-with-subtitle" class="exclamation">
+    <p class="subtitle"><%= subtitle %></p>
+    <%= text %>
+  </div>
+</script>
+
