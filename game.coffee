@@ -4,6 +4,11 @@ ROTATION =
   DOWN: 2
   LEFT: 3
 
+ARROW_RESULT =
+  FAIL: 0
+  SUCCESS: 1
+  LEVELEND: 2
+
 class Stage
   constructor: ->
     @$stage = $("#stage")
@@ -34,16 +39,23 @@ class Stage
   clear: => @$stage.html("")
 
   addArrow: (rotation) =>
-    color =["red", "orange", "yellow", "pink"]
-    @$stage.append tmpl("arrow", arrowId: @arrowId)
+    color =["blue", "orange", "yellow", "pink"]
+    @$stage.append tmpl("arrow", arrowId: @arrowId, top: (rotation * 80) + 20)
 
     arrowSelector = "arrow-#{@arrowId}"
     @arrowId += 1
     R = Raphael(arrowSelector, 75, 75)
-    rect = R.rect(0, 0, 75, 75).attr(fill: color[rotation])
+    rect = R.rect(0, 0, 75, 75).attr(fill: color[rotation], opacity: 0)
     img = R.image("images/arrow.png", 0, 0, 75, 75).attr(transform: "r#{90*rotation}")
 
-    {arrowSelector: arrowSelector, rimg: img, rrect: rect, rotation: rotation}
+    {$arrow: $("##{arrowSelector}"), rimg: img, rrect: rect, rotation: rotation}
+
+  removeArrow: (arrow, result) =>
+    flashColor = ["red", "blue", arrow["rrect"].attr("fill")][result]
+    originalColor = arrow['rrect'].attr('fill')
+    arrow["rrect"].animate {fill:flashColor}, 150, =>
+      arrow["rrect"].animate {fill: originalColor, opacity: 0}, 500, =>
+        arrow["$arrow"].remove()
 
 class Game
   constructor: (@stage) ->
@@ -68,7 +80,6 @@ class Game
   nextLevel: =>
     @level ?= 0
     @level += 1
-    @progress = 0.0
     @stopTickTock = false
     @arrows_queue = []
     @tickTock()
@@ -76,34 +87,36 @@ class Game
   evolution: (done_fn) =>
     #TODO based on @level
     #TODO "GET READY" message
-    @updateProgressBar()
-    done_fn()
+    @setProgress(0)
+    done_fn() #TODO after GET READY
 
-  updateProgressBar: =>
-    #TODO based on @progress
+  setProgress: (amount) =>
+    @progress = amount
+    @progress = Math.min(1.0, Math.max(0, @progress)) # between 0 and 1 (inclusive)
+    #TODO animate progress bar based on @progress, and then call done_fn
 
   tickTock: =>
     return  if @stopTickTock
     arrow = @stage.addArrow(randomRange(0, 3))
-    #arrow.animate, done = fail
+    arrow["rrect"].animate {opacity: 1}, 400
+    arrow["$arrow"].animate {right: '+=550'}, 1000, 'linear', =>
+      arrow["$arrow"].animate {right: '+=100'}, 600, 'linear'
+      @stage.removeArrow(arrow, ARROW_RESULT.FAIL)
     @arrows_queue.push(arrow)
-    #setTimeout(@tickTock, randomRange(50, 200))
+    setTimeout(@tickTock, randomRange(200, 500))
 
   #TODO finish this method
   onArrowPress: (e) =>
     return  if @stopTickTock
     actualArrow = @arrow_queue.shift()
     #TODO show right/wrong color for actualArrow
-    # progress += some amount based on right/wrong
-    @progress = Math.max(0, @progress)
+    #TODO @setProgress(@progress + some amount based on right/wrong)
 
     if @progress >= 1.0
-      @progress = 1.0
       @stopTickTock = true
       # TODO remove all arrows
       level += 1
       if level > 3 then @sceneEnding() else @evolution(@nextLevel)
-    @updateProgressBar()
 
 $ ->
   stage = new Stage()
