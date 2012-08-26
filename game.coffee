@@ -15,6 +15,8 @@ class Stage
     @arrowId = 0
     @removedArrows = {}
 
+  setGame: (game) => @game = game
+
   fadeOut: (done_fn, ms=150) =>
     @$stage.children().fadeOut(ms)
     # prevent done cb from being called multiple times if many children
@@ -37,6 +39,9 @@ class Stage
       else
         done_fn()
 
+  append: (html) =>
+    @$stage.append(html)
+
   clear: => @$stage.html("")
 
   addArrow: (rotation) =>
@@ -55,6 +60,9 @@ class Stage
     id = arrow["$arrow"].attr("id")
     return if @removedArrows[id]?
     @removedArrows[id] = true
+    progressChange = 0.1 / @game.level
+    progressChange *= -1  if result == ARROW_RESULT.FAIL
+    @game.setProgress(@game.progress + progressChange) # less progress made the higher the level
     flashColor = ["red", "blue", arrow["rrect"].attr("fill")][result]
     originalColor = arrow['rrect'].attr('fill')
     flashSpeed = if fast then 100 else 150
@@ -75,6 +83,8 @@ class Game
 
   sceneGame: =>
     @stage.clear()
+    @progress = 0
+    @stage.append tmpl("progress-bar")
     $(document).keydown (e) =>
       pressed = {37: ROTATION.LEFT, 38: ROTATION.UP, 39: ROTATION.RIGHT, 40: ROTATION.DOWN}[e.keyCode]
       @onArrowPress(pressed)  if pressed?
@@ -101,7 +111,9 @@ class Game
   setProgress: (amount) =>
     @progress = amount
     @progress = Math.min(1.0, Math.max(0, @progress)) # between 0 and 1 (inclusive)
-    #TODO animate progress bar based on @progress, and then call done_fn
+    @progress = 0  if @progress < 0.001
+    $bar = $("#stage").find("#progress-bar")
+    $bar.find("#progress-bar-inner").css("width", "#{@progress * $bar.width()}px")
 
   tickTock: =>
     return  if @stopTickTock
@@ -119,25 +131,21 @@ class Game
     return  if @stopTickTock
     actualArrow = @arrows_queue.shift()
     return  unless actualArrow?
-    progressChange = 0
     if actualArrow["rotation"] == pressed
       # correct arrow pressed
       @stage.removeArrow(actualArrow, ARROW_RESULT.SUCCESS)
-      #progressChange =
     else
       # wrong arrow pressed
       @stage.removeArrow(actualArrow, ARROW_RESULT.FAIL)
-      #progressChange =
 
-    @setProgress(@progress + progressChange)
-
-    if @progress >= 1.0
+    if @progress >= 0.99
+      @setProgress(1)
       @stopTickTock = true
       # TODO remove all arrows
-      level += 1
-      if level > 3 then @sceneEnding() else @evolution(@nextLevel)
+      @level += 1
+      if @level > 3 then @sceneEnding() else @evolution(@nextLevel)
 
 $ ->
   stage = new Stage()
   preloadImages ["logo.png", "click-uncache.png", "arrow.png", "instructions.png"], ->
-    new Game(stage)
+    stage.setGame new Game(stage)
